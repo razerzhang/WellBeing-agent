@@ -10,11 +10,11 @@ ENV PYTHONUNBUFFERED=1
 ENV HOST=0.0.0.0
 ENV PORT=8000
 
-# 安装系统依赖
+# 安装Node.js和npm（用于构建前端）
 RUN apt-get update && apt-get install -y \
     curl \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # 安装Node.js和npm（用于构建前端）
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
@@ -45,9 +45,9 @@ USER appuser
 # 暴露端口
 EXPOSE 8000
 
-# 健康检查
+# 健康检查（使用Python替代curl）
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/health || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
 
 # 启动命令
 CMD ["python", "server.prod.py"]
