@@ -50,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
 
 # 启动命令
-CMD ["python", "server.prod.py"]
+CMD ["uvicorn", "server.prod:app", "--host", "0.0.0.0", "--port", "8000"]
