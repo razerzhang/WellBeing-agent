@@ -95,7 +95,7 @@ if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     
     uvicorn.run(
-        "server.prod:app",
+        "production_server:app",
         host=host,
         port=port,
         reload=False,  # 生产环境关闭热重载

@@ -175,7 +175,7 @@ deploy_traditional() {
     
     # 启动应用
     log_info "启动应用..."
-    nohup python3 server.prod.py > logs/app.log 2>&1 &
+    nohup python3 production_server.py > logs/app.log 2>&1 &
     
     # 获取进程ID
     APP_PID=$!
@@ -243,7 +243,7 @@ After=network.target
 Type=simple
 User=$USER
 WorkingDirectory=$(pwd)
-ExecStart=/usr/bin/python3 server.prod.py
+ExecStart=/usr/bin/python3 production_server.py
 Restart=always
 RestartSec=10
 

@@ -75,7 +75,7 @@ def start_server():
         
         # 启动服务器
         process = subprocess.Popen(
-            [sys.executable, "server.prod.py"],
+            [sys.executable, "production_server.py"],
             env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE

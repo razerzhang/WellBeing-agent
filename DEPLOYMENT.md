@@ -96,7 +96,7 @@ cd ..
 mkdir -p logs data
 
 # 启动应用
-python3 server.prod.py
+python3 production_server.py
 ```
 
 ## 🐳 Docker部署
