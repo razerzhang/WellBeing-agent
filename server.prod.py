@@ -13,7 +13,7 @@ from typing import AsyncGenerator
 import json
 
 # Import the 维尔必应 agent
-from wellbeing_agent import create_wellbeing_agent
+from wellbeing_agent import run_wellbeing_agent
 
 app = FastAPI(
     title="维尔必应 API",
@@ -54,16 +54,13 @@ async def health_check():
 async def chat_stream(message: ChatMessage) -> AsyncGenerator[str, None]:
     """流式聊天端点，处理用户消息通过维尔必应 agent"""
     try:
-        # 创建维尔必应 agent
-        agent = create_wellbeing_agent()
-        
-        # 处理消息
-        result = await agent.ainvoke({"message": message.message})
+        # 直接调用run_wellbeing_agent函数
+        result = await run_wellbeing_agent(message.message)
         
         # 返回流式响应
         response_data = {
             "type": "content",
-            "content": result.get("response", "抱歉，我无法处理您的请求。")
+            "content": result.get("advice_result", "抱歉，我无法处理您的请求。")
         }
         
         yield f"data: {json.dumps(response_data, ensure_ascii=False)}\n\n"
@@ -80,9 +77,8 @@ async def chat_stream(message: ChatMessage) -> AsyncGenerator[str, None]:
 async def chat(message: ChatMessage):
     """普通聊天端点"""
     try:
-        agent = create_wellbeing_agent()
-        result = await agent.ainvoke({"message": message.message})
-        return ChatResponse(response=result.get("response", "抱歉，我无法处理您的请求。"))
+        result = await run_wellbeing_agent(message.message)
+        return ChatResponse(response=result.get("advice_result", "抱歉，我无法处理您的请求。"))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"服务器错误: {str(e)}")
 
