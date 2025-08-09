@@ -31,7 +31,8 @@ app.add_middleware(
 )
 
 # 挂载静态文件（前端构建文件）
-app.mount("/static", StaticFiles(directory="frontend/dist"), name="static")
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="root")
 
 # 数据模型
 class ChatMessage(BaseModel):
@@ -40,10 +41,7 @@ class ChatMessage(BaseModel):
 class ChatResponse(BaseModel):
     response: str
 
-@app.get("/")
-async def read_root():
-    """根路径，返回前端页面"""
-    return FileResponse("frontend/dist/index.html")
+# 根路径由静态文件挂载处理，不需要额外的路由
 
 @app.get("/api/health")
 async def health_check():
