@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   wellbeing-app:
     build: .
@@ -18,10 +20,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    networks:
-      - wellbeing-network
 
-  # 可选：添加Nginx反向代理
   nginx:
     image: nginx:alpine
     container_name: wellbeing-nginx
@@ -34,9 +33,3 @@ services:
     depends_on:
       - wellbeing-app
     restart: unless-stopped
-    networks:
-      - wellbeing-network
-
-networks:
-  wellbeing-network:
-    driver: bridge
