@@ -6,7 +6,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 import asyncio
 from typing import AsyncGenerator
@@ -51,27 +51,34 @@ async def health_check():
     return {"status": "healthy", "message": "维尔必应 API 运行正常"}
 
 @app.post("/api/chat/stream")
-async def chat_stream(message: ChatMessage) -> AsyncGenerator[str, None]:
+async def chat_stream(message: ChatMessage):
     """流式聊天端点，处理用户消息通过维尔必应 agent"""
-    try:
-        # 直接调用run_wellbeing_agent函数
-        result = await run_wellbeing_agent(message.message)
-        
-        # 返回流式响应
-        response_data = {
-            "type": "content",
-            "content": result.get("advice_result", "抱歉，我无法处理您的请求。")
-        }
-        
-        yield f"data: {json.dumps(response_data, ensure_ascii=False)}\n\n"
-        
-        # 发送结束信号
-        end_data = {"type": "end", "content": ""}
-        yield f"data: {json.dumps(end_data, ensure_ascii=False)}\n\n"
-        
-    except Exception as e:
-        error_data = {"type": "error", "content": f"服务器错误: {str(e)}"}
-        yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
+    async def generate_stream():
+        try:
+            # 直接调用run_wellbeing_agent函数
+            result = await run_wellbeing_agent(message.message)
+            
+            # 返回流式响应
+            response_data = {
+                "type": "content",
+                "content": result.get("advice_result", "抱歉，我无法处理您的请求。")
+            }
+            
+            yield f"data: {json.dumps(response_data, ensure_ascii=False)}\n\n"
+            
+            # 发送结束信号
+            end_data = {"type": "end", "content": ""}
+            yield f"data: {json.dumps(end_data, ensure_ascii=False)}\n\n"
+            
+        except Exception as e:
+            error_data = {"type": "error", "content": f"服务器错误: {str(e)}"}
+            yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
+    
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/plain",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
+    )
 
 @app.post("/api/chat")
 async def chat(message: ChatMessage):
