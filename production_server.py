@@ -13,7 +13,7 @@ from typing import AsyncGenerator
 import json
 
 # Import the 维尔必应 agent
-from wellbeing_agent import run_wellbeing_agent
+from wellbeing_agent import run_wellbeing_agent, run_wellbeing_agent_stream
 
 app = FastAPI(
     title="维尔必应 API",
