@@ -40,7 +40,3 @@ services:
 networks:
   wellbeing-network:
     driver: bridge
-
-volumes:
-  logs:
-  data:
