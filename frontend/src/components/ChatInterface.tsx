@@ -25,12 +25,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesEndRef.current) {
+      // 检查是否已经在底部附近
+      const container = messagesEndRef.current.parentElement
+      if (container) {
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100
+        if (isNearBottom) {
+          // 如果接近底部，使用平滑滚动
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+        } else {
+          // 如果用户已经向上滚动，不强制滚动到底部
+          return
+        }
+      }
+    }
   }
 
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // 监听消息内容变化，确保流式输出时也能滚动
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage && lastMessage.isStreaming) {
+      scrollToBottom()
+    }
+  }, [messages.map(msg => msg.content).join('')])
 
   useEffect(() => {
     if (textareaRef.current) {
