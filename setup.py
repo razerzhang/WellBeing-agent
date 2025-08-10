@@ -13,18 +13,29 @@ def create_env_file():
     if not env_path.exists():
         print("📝 Creating .env file...")
         
-        env_content = """# OpenAI API Key
-OPENAI_API_KEY=your_openai_api_key_here
+        # Copy from env.example
+        example_path = Path("env.example")
+        if example_path.exists():
+            with open(example_path, 'r') as f:
+                env_content = f.read()
+        else:
+            env_content = """# DeepSeek API Configuration
+DEEPSEEK_API_KEY=
+DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
 
-# Optional: OpenAI Organization ID
-OPENAI_ORG_ID=your_organization_id_here
+# Optional: Model Configuration
+DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_TEMPERATURE=0.0
+
+# OpenAI API Key (fallback)
+OPENAI_API_KEY=your_openai_api_key_here
 """
         
         with open(env_path, 'w') as f:
             f.write(env_content)
         
         print("✅ .env file created successfully!")
-        print("⚠️  Please edit .env file and add your OpenAI API key")
+        print("⚠️  Please edit .env file and add your API keys")
     else:
         print("✅ .env file already exists")
 
@@ -35,7 +46,9 @@ def check_dependencies():
         'langchain',
         'langchain-openai',
         'python-dotenv',
-        'pydantic'
+        'pydantic',
+        'fastapi',
+        'uvicorn'
     ]
     
     missing_packages = []
@@ -66,18 +79,17 @@ def main():
     check_dependencies()
     
     print("\n🎯 Next steps:")
-    print("1. Edit .env file and add your OpenAI API key")
+    print("1. Edit .env file and add your API keys")
     print("2. Run 'pip install -r requirements.txt' to install dependencies")
-    print("3. Run 'python main.py' to start the basic agent")
-    print("4. Run 'python advanced_agent.py' to test the advanced agent")
-    print("5. Run 'python test_agent.py' to run the test suite")
+    print("3. Run 'python production_server.py' to start the production server")
+    print("4. Run 'cd frontend && npm install && npm run dev' to start the frontend")
     
     print("\n📚 Available commands:")
-    print("- python main.py                    : Start basic agent (interactive)")
-    print("- python main.py \"your message\"     : Run basic agent with message")
-    print("- python advanced_agent.py          : Run advanced agent (interactive)")
-    print("- python advanced_agent.py \"message\" : Run advanced agent with message")
-    print("- python test_agent.py              : Run test suite")
+    print("- python production_server.py       : Start production server")
+    print("- python wellbeing_agent.py         : Run wellbeing agent (interactive)")
+    print("- python wellbeing_agent.py \"message\" : Run wellbeing agent with message")
+    print("- cd frontend && npm run dev        : Start frontend development server")
+    print("- cd frontend && npm run build      : Build frontend for production")
     
     print("\n✨ Setup complete! Happy coding!")
 

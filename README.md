@@ -10,11 +10,12 @@ langgraph-agent/
 │   ├── src/              # React 源代码
 │   ├── package.json      # 前端依赖配置
 │   └── start.sh          # 前端启动脚本
-├── server.py             # 后端 API 服务器
+├── production_server.py  # 生产环境后端 API 服务器
 ├── wellbeing_agent.py    # 核心健康顾问代理
 ├── deepseek_llm.py      # DeepSeek LLM 集成
 ├── requirements.txt      # Python 依赖
-└── start_server.py       # 后端启动脚本
+├── setup.py             # 项目设置脚本
+└── env.example          # 环境变量模板
 ```
 
 ## 🚀 快速开始
@@ -25,8 +26,11 @@ langgraph-agent/
 # 安装 Python 依赖
 pip install -r requirements.txt
 
+# 配置环境变量
+python setup.py
+
 # 启动后端服务器
-python start_server.py
+python production_server.py
 ```
 
 ### 2. 启动前端应用
@@ -92,16 +96,16 @@ npm run preview      # 预览生产版本
 
 ### 后端开发
 ```bash
-python start_server.py    # 启动开发服务器
-python -m pytest         # 运行测试
+python production_server.py    # 启动生产服务器
+python wellbeing_agent.py     # 运行健康顾问代理
 ```
 
 ## 📚 文档
 
-- [前端快速开始](frontend/README.md)
-- [API 文档](DEMO.md)
+- [前端快速开始](FRONTEND_QUICKSTART.md)
 - [流式输出说明](STREAMING_README.md)
 - [实现总结](IMPLEMENTATION_SUMMARY.md)
+- [部署指南](DEPLOYMENT.md)
 
 ## 🚀 部署
 
