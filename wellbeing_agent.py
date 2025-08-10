@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.graph import StateGraph, END, START
 
+
 # Import DeepSeek LLM
 from deepseek_llm import create_deepseek_llm, create_fallback_llm
 
@@ -28,7 +29,7 @@ class WellbeingState(TypedDict):
     user_profile: Annotated[Optional[Dict], "User's health profile and preferences"]
     advice_result: Annotated[Optional[str], "Generated health advice"]
     follow_up_questions: Annotated[Optional[List], "Follow-up questions for better advice"]
-
+1
 # Initialize the LLM
 try:
     llm = create_deepseek_llm()

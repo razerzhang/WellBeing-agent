@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Sidebar from './components/Sidebar'
 import ChatInterface from './components/ChatInterface'
 import { Message, QuickAction } from './types'
@@ -27,6 +27,7 @@ function App() {
   const [isStreaming, setIsStreaming] = useState(true)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [apiStatus, setApiStatus] = useState<'online' | 'offline'>('online')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false) // 移动端侧边栏控制
 
   // 检查API状态
   const checkApiStatus = async () => {
@@ -227,6 +228,8 @@ function App() {
 
   const handleQuickAction = (action: QuickAction) => {
     handleSendMessage(action.message)
+    // 移动端点击快速操作后关闭侧边栏
+    setIsSidebarOpen(false)
   }
 
   const clearChat = () => {
@@ -236,7 +239,9 @@ function App() {
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
       <div className="flex h-screen bg-gray-50">
-        <AnimatePresence>
+
+        {/* 侧边栏 - 桌面端显示，移动端抽屉式 */}
+        <div className="hidden lg:block lg:flex-shrink-0">
           <Sidebar
             isStreaming={isStreaming}
             onStreamingChange={setIsStreaming}
@@ -245,6 +250,37 @@ function App() {
             apiStatus={apiStatus}
             onQuickAction={handleQuickAction}
           />
+        </div>
+        
+        {/* 移动端抽屉式侧边栏 */}
+        <AnimatePresence>
+          {isSidebarOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                onClick={() => setIsSidebarOpen(false)}
+              />
+              <motion.div
+                initial={{ x: -320 }}
+                animate={{ x: 0 }}
+                exit={{ x: -320 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed lg:hidden z-50 h-full"
+              >
+                <Sidebar
+                  isStreaming={isStreaming}
+                  onStreamingChange={setIsStreaming}
+                  isDarkMode={isDarkMode}
+                  onDarkModeChange={setIsDarkMode}
+                  apiStatus={apiStatus}
+                  onQuickAction={handleQuickAction}
+                />
+              </motion.div>
+            </>
+          )}
         </AnimatePresence>
         
         <main className="flex-1 flex flex-col">
@@ -253,6 +289,8 @@ function App() {
             onSendMessage={handleSendMessage}
             onClearChat={clearChat}
             isStreaming={isStreaming}
+            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            isSidebarOpen={isSidebarOpen}
           />
         </main>
       </div>

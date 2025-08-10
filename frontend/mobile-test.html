@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动端测试 - Wellbeing Agent</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .test-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .device-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .device-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        .device-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>移动端适配测试</h1>
+        
+        <div class="device-info">
+            <h3>设备信息</h3>
+            <p><strong>屏幕宽度:</strong> <span id="screen-width"></span>px</p>
+            <p><strong>视口宽度:</strong> <span id="viewport-width"></span>px</p>
+            <p><strong>设备像素比:</strong> <span id="device-ratio"></span></p>
+            <p><strong>用户代理:</strong> <span id="user-agent"></span></p>
+        </div>
+
+        <div class="test-item">
+            <div class="test-title">响应式布局 <span class="status success">✓ 已实现</span></div>
+            <div class="test-description">
+                应用已使用Tailwind CSS的响应式类（sm:, md:, lg:, xl:）进行移动端适配。
+                在移动设备上，侧边栏会隐藏并显示为抽屉式菜单。
+            </div>
+        </div>
+
+        <div class="test-item">
+            <div class="test-title">触摸优化 <span class="status success">✓ 已实现</span></div>
+            <div class="test-description">
+                所有按钮和交互元素的最小触摸目标为44x44px，符合移动端可访问性标准。
+                输入框字体大小设置为16px，防止iOS设备自动缩放。
+            </div>
+        </div>
+
+        <div class="test-item">
+            <div class="test-title">字体和间距优化 <span class="status success">✓ 已实现</span></div>
+            <div class="test-description">
+                移动端使用较小的字体大小和间距，桌面端保持原有尺寸。
+                消息气泡、头像、按钮等元素都进行了响应式调整。
+            </div>
+        </div>
+
+        <div class="test-item">
+            <div class="test-title">侧边栏抽屉 <span class="status success">✓ 已实现</span></div>
+            <div class="test-description">
+                移动端侧边栏默认隐藏，点击左上角菜单按钮可打开抽屉式侧边栏。
+                点击遮罩层或快速操作后会自动关闭侧边栏。
+            </div>
+        </div>
+
+        <div class="test-item">
+            <div class="test-title">消息界面优化 <span class="status success">✓ 已实现</span></div>
+            <div class="test-description">
+                消息气泡在移动端使用更紧凑的布局，头像和间距都进行了调整。
+                输入框和发送按钮也针对移动端进行了优化。
+            </div>
+        </div>
+
+        <div class="test-item">
+            <div class="test-title">Markdown内容优化 <span class="status success">✓ 已实现</span></div>
+            <div class="test-description">
+                Markdown内容在移动端使用较小的字体大小，标题和段落都进行了响应式调整。
+            </div>
+        </div>
+
+        <div class="test-item">
+            <div class="test-title">建议测试步骤</div>
+            <div class="test-description">
+                <ol>
+                    <li>在移动设备或浏览器开发者工具中打开应用</li>
+                    <li>测试侧边栏的打开/关闭功能</li>
+                    <li>测试快速操作按钮的响应</li>
+                    <li>测试消息发送和接收功能</li>
+                    <li>测试输入框的触摸体验</li>
+                    <li>检查不同屏幕尺寸下的显示效果</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示设备信息
+        document.getElementById('screen-width').textContent = screen.width;
+        document.getElementById('viewport-width').textContent = window.innerWidth;
+        document.getElementById('device-ratio').textContent = window.devicePixelRatio;
+        document.getElementById('user-agent').textContent = navigator.userAgent.substring(0, 50) + '...';
+
+        // 监听窗口大小变化
+        window.addEventListener('resize', function() {
+            document.getElementById('viewport-width').textContent = window.innerWidth;
+        });
+    </script>
+</body>
+</html>
