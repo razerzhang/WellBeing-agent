@@ -21,10 +21,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [autoScroll, setAutoScroll] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const scrollToBottom = () => {
+    if (!autoScroll) return // 如果用户禁用了自动滚动，直接返回
+    
     if (messagesEndRef.current) {
       // 检查是否已经在底部附近
       const container = messagesEndRef.current.parentElement
@@ -45,13 +48,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     scrollToBottom()
   }, [messages])
 
-  // 监听消息内容变化，确保流式输出时也能滚动
+  // 只在消息数组变化时滚动，不在内容更新时强制滚动
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
-    if (lastMessage && lastMessage.isStreaming) {
+    if (lastMessage && lastMessage.isStreaming && messages.length > 1) {
+      // 只在新增流式消息时滚动，不在内容更新时滚动
       scrollToBottom()
     }
-  }, [messages.map(msg => msg.content).join('')])
+  }, [messages.length])
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -295,11 +299,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </motion.button>
           </div>
           
-          {/* Streaming Status */}
-          <div className="flex items-center justify-center mt-3">
+          {/* Streaming Status and Auto-scroll Control */}
+          <div className="flex items-center justify-between mt-3">
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <Zap className={`w-4 h-4 ${isStreaming ? 'text-energy-500' : 'text-gray-400'}`} />
               <span>{isStreaming ? '流式输出已启用' : '流式输出已禁用'}</span>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setAutoScroll(!autoScroll)}
+                className={`flex items-center space-x-2 px-3 py-1 rounded-lg text-xs transition-colors ${
+                  autoScroll 
+                    ? 'bg-primary-100 text-primary-700 hover:bg-primary-200' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <div className={`w-2 h-2 rounded-full ${autoScroll ? 'bg-primary-500' : 'bg-gray-400'}`} />
+                <span>{autoScroll ? '自动滚动' : '手动滚动'}</span>
+              </button>
             </div>
           </div>
         </div>
