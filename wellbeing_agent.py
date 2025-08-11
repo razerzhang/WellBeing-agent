@@ -13,12 +13,28 @@ from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.graph import StateGraph, END, START
 
-
 # Import DeepSeek LLM
 from deepseek_llm import create_deepseek_llm, create_fallback_llm
 
 # Load environment variables
 load_dotenv()
+
+# LangSmith Configuration
+# According to https://docs.smith.langchain.com/, LangSmith tracing is automatically enabled
+# when LANGCHAIN_API_KEY and LANGCHAIN_PROJECT are set
+if os.getenv("LANGCHAIN_API_KEY"):
+    print("🔗 LangSmith tracing enabled")
+    print(f"📊 Project: {os.getenv('LANGCHAIN_PROJECT', 'wellbeing-agent')}")
+    print(f"🌐 Dashboard: https://smith.langchain.com/")
+    
+    # Set additional LangSmith configuration for better tracing
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+    
+    # Optional: Set tags for better organization
+    os.environ["LANGCHAIN_TAGS"] = "wellbeing-agent,health-advisor"
+else:
+    print("ℹ️  LangSmith tracing disabled - set LANGCHAIN_API_KEY to enable")
 
 # Define the state structure
 class WellbeingState(TypedDict):
@@ -29,11 +45,15 @@ class WellbeingState(TypedDict):
     user_profile: Annotated[Optional[Dict], "User's health profile and preferences"]
     advice_result: Annotated[Optional[str], "Generated health advice"]
     follow_up_questions: Annotated[Optional[List], "Follow-up questions for better advice"]
-1
+    
 # Initialize the LLM
 try:
-    llm = create_deepseek_llm()
-    print("🤖 Using DeepSeek LLM")
+    api_key = os.getenv("DEEPSEEK_API_KEY")
+    if api_key and api_key.strip():
+        llm = create_deepseek_llm()
+        print("🤖 Using DeepSeek LLM")
+    else:
+        raise ValueError("DEEPSEEK_API_KEY is empty or not set")
 except Exception as e:
     print(f"⚠️  DeepSeek LLM initialization failed: {e}")
     print("🔄 Falling back to OpenAI LLM...")
@@ -41,6 +61,8 @@ except Exception as e:
     if llm:
         print("✅ OpenAI fallback LLM initialized")
     else:
+        print("❌ No LLM available. Please check your API keys.")
+        print("   Set either DEEPSEEK_API_KEY or OPENAI_API_KEY in .env file")
         raise Exception("No LLM available. Please check your API keys.")
 
 # Health and wellness knowledge base
@@ -396,18 +418,18 @@ def end_node(state: WellbeingState) -> WellbeingState:
 # Create the graph
 workflow = StateGraph(WellbeingState)
 
-# Add nodes
-workflow.add_node("start", start_node)
-workflow.add_node("analyze_intent", analyze_intent_node)
-workflow.add_node("generate_advice", generate_advice_node)
-workflow.add_node("end", end_node)
+# Add nodes with descriptive names for LangSmith tracing
+workflow.add_node("wellbeing_start", start_node)
+workflow.add_node("wellbeing_analyze_intent", analyze_intent_node)
+workflow.add_node("wellbeing_generate_advice", generate_advice_node)
+workflow.add_node("wellbeing_end", end_node)
 
 # Add edges
-workflow.add_edge(START, "start")
-workflow.add_edge("start", "analyze_intent")
-workflow.add_edge("analyze_intent", "generate_advice")
-workflow.add_edge("generate_advice", "end")
-workflow.add_edge("end", END)
+workflow.add_edge(START, "wellbeing_start")
+workflow.add_edge("wellbeing_start", "wellbeing_analyze_intent")
+workflow.add_edge("wellbeing_analyze_intent", "wellbeing_generate_advice")
+workflow.add_edge("wellbeing_generate_advice", "wellbeing_end")
+workflow.add_edge("wellbeing_end", END)
 
 # Compile the graph
 app = workflow.compile()
@@ -435,14 +457,15 @@ async def run_wellbeing_agent_stream(user_input: str):
     """Run the wellbeing agent with streaming output."""
     print(f"\n👤 User: {user_input}")
     
-    # Initialize state
-    state = {
-        "messages": [HumanMessage(content=user_input)],
-        "current_step": "start"
-    }
+    # Use LangGraph app for proper tracing
+    result = await app.ainvoke({
+        "messages": [HumanMessage(content=user_input)]
+    })
+    
+    # Extract state from result
+    state = result
     
     # Start the workflow
-    state = start_node(state)
     yield {
         'type': 'step',
         'step': 'start',
@@ -450,7 +473,6 @@ async def run_wellbeing_agent_stream(user_input: str):
     }
     
     # Analyze intent
-    state = analyze_intent_node(state)
     yield {
         'type': 'step', 
         'step': 'analyze_intent',

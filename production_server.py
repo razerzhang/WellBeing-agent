@@ -2,6 +2,30 @@
 FastAPI Server for 维尔必应 - Production Version
 """
 import os
+import sys
+
+# Set LangSmith environment variables BEFORE importing anything else
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+os.environ["LANGCHAIN_TRACING"] = "true"
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
+
+# Set API key if available
+api_key = os.getenv("LANGCHAIN_API_KEY")
+if api_key:
+    os.environ["LANGCHAIN_API_KEY"] = api_key
+    os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "wellbeing-agent")
+    os.environ["LANGCHAIN_TAGS"] = "wellbeing-agent,production-server"
+    print("🔗 LangSmith tracing enabled in production server")
+    print(f"📊 Project: {os.environ['LANGCHAIN_PROJECT']}")
+    print(f"🌐 Dashboard: https://smith.langchain.com/")
+    print("✅ LangSmith environment variables set")
+else:
+    print("ℹ️  LangSmith tracing disabled - set LANGCHAIN_API_KEY to enable")
+
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +36,7 @@ import asyncio
 from typing import AsyncGenerator
 import json
 
-# Import the 维尔必应 agent
+# Import the 维尔必应 agent AFTER setting environment variables
 from wellbeing_agent import run_wellbeing_agent, run_wellbeing_agent_stream
 
 app = FastAPI(
@@ -122,6 +146,6 @@ if __name__ == "__main__":
         host=host,
         port=port,
         reload=False,  # 生产环境关闭热重载
-        workers=4,     # 多进程
+        workers=1,     # 单进程，避免多进程LangSmith问题
         log_level="info"
     )

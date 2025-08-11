@@ -71,6 +71,7 @@ npm run dev
 - **饮食建议** - 营养搭配指导
 - **健康管理** - 生活方式优化
 - **流式输出** - 实时响应体验
+- **LangSmith 追踪** - 可视化链路追踪和监控
 
 ## 📁 目录说明
 
@@ -99,6 +100,49 @@ npm run preview      # 预览生产版本
 python production_server.py    # 启动生产服务器
 python wellbeing_agent.py     # 运行健康顾问代理
 ```
+
+## 🔗 LangSmith 集成
+
+本项目集成了 [LangSmith](https://docs.smith.langchain.com/) 用于 LLM 应用的可观测性和调试。
+
+### 快速设置
+
+```bash
+# 运行设置脚本
+./setup_langsmith.sh
+
+# 或手动设置
+cp env.example .env
+# 编辑 .env 文件，添加你的 LangSmith API 密钥
+```
+
+### 查看追踪
+
+1. 获取 LangSmith API 密钥：https://smith.langchain.com/
+2. 在 `.env` 文件中设置 `LANGCHAIN_API_KEY`
+3. 运行应用，查看实时追踪：https://smith.langchain.com/
+
+### 测试集成
+
+```bash
+# 测试 LangSmith 连接和追踪
+python test_langsmith.py
+
+# 监控追踪数据
+python langsmith_monitor.py
+
+# 使用集成启动脚本
+./start_with_langsmith.sh
+```
+
+### LangSmith 功能
+
+- **实时追踪**: 自动记录所有 LLM 调用和工作流节点
+- **性能监控**: 追踪响应时间、错误率和成功率
+- **可视化分析**: 在 LangSmith Dashboard 中查看详细链路
+- **调试支持**: 深入分析每个节点的输入输出
+
+详细说明请参考：[LANGSMITH_SETUP.md](LANGSMITH_SETUP.md)
 
 ## 📚 文档
 

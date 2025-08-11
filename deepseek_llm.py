@@ -217,12 +217,30 @@ def create_fallback_llm():
     try:
         from langchain_openai import ChatOpenAI
         api_key = os.getenv("OPENAI_API_KEY")
-        if api_key:
-            return ChatOpenAI(
+        if api_key and api_key != "your_openai_api_key_here":
+            llm = ChatOpenAI(
                 model="gpt-3.5-turbo",
                 temperature=0,
                 api_key=api_key
             )
+            
+            # Add ainvoke_stream method for compatibility
+            async def ainvoke_stream(messages, **kwargs):
+                """Async stream wrapper for ChatOpenAI."""
+                try:
+                    # Use astream for streaming
+                    async for chunk in llm.astream(messages, **kwargs):
+                        if hasattr(chunk, 'content') and chunk.content:
+                            yield chunk.content
+                except Exception as e:
+                    # Fallback to non-streaming if streaming fails
+                    response = await llm.ainvoke(messages, **kwargs)
+                    if hasattr(response, 'content'):
+                        yield response.content
+            
+            # Add the method to the LLM instance
+            llm.ainvoke_stream = ainvoke_stream
+            return llm
     except ImportError:
         pass
     
