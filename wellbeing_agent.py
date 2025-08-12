@@ -141,73 +141,25 @@ def start_node(state: WellbeingState) -> WellbeingState:
     }
 
 def analyze_intent_node(state: WellbeingState) -> WellbeingState:
-    """Analyze user's health and wellness intent."""
-    messages = state["messages"]
+    """Analyze user's health and wellness intent using new intent router."""
+    from intent_analysis_node import analyze_intent_node as new_analyze_intent_node
     
-    if not messages or not isinstance(messages[-1], HumanMessage):
-        return {
-            **state,
-            "current_step": "end",
-            "advice_result": "No user message found"
-        }
+    # Use the new intent analysis node
+    result = new_analyze_intent_node(state)
     
-    # Analyze user intent
-    intent_prompt = SystemMessage(content="""
-    You are a health and wellness expert. Analyze the user's message to understand their health intent.
-    
-    Determine:
-    1. What type of advice they need (diet, exercise, general wellness, or specific health concern)
-    2. Their current health status or goals
-    3. Any specific preferences or restrictions
-    
-    Respond with JSON format:
-    {
-        "intent": "diet" | "exercise" | "wellness" | "specific_concern",
-        "advice_type": "diet" | "exercise" | "both" | "general",
+    # Convert the result to match the expected format
+    return {
+        **state,
+        "current_step": "generate_advice",
+        "user_intent": result.get("user_intent", "wellness"),
+        "advice_type": result.get("advice_type", "general"),
         "user_profile": {
-            "goals": "string describing health goals",
-            "preferences": "dietary or exercise preferences",
-            "restrictions": "any health restrictions or limitations",
-            "current_activity": "current exercise or diet habits"
-        },
-        "confidence": 0.0-1.0
+            "goals": f"{result.get('intent_description', 'general')} improvement",
+            "preferences": "none specified",
+            "restrictions": "none specified",
+            "current_activity": "not specified"
+        }
     }
-    """)
-    
-    try:
-        analysis = llm.invoke([intent_prompt, messages[-1]])
-        
-        try:
-            analysis_result = json.loads(analysis.content)
-        except json.JSONDecodeError:
-            analysis_result = {
-                "intent": "wellness",
-                "advice_type": "general",
-                "user_profile": {
-                    "goals": "general health improvement",
-                    "preferences": "none specified",
-                    "restrictions": "none specified",
-                    "current_activity": "not specified"
-                },
-                "confidence": 0.5
-            }
-        
-        return {
-            **state,
-            "current_step": "generate_advice",
-            "user_intent": analysis_result.get("intent"),
-            "advice_type": analysis_result.get("advice_type"),
-            "user_profile": analysis_result.get("user_profile", {})
-        }
-    except Exception as error:
-        print(f"Error in intent analysis: {error}")
-        return {
-            **state,
-            "current_step": "generate_advice",
-            "user_intent": "wellness",
-            "advice_type": "general",
-            "user_profile": {}
-        }
 
 def generate_advice_node(state: WellbeingState) -> WellbeingState:
     """Generate personalized health and wellness advice."""
