@@ -409,13 +409,11 @@ async def run_wellbeing_agent_stream(user_input: str):
     """Run the wellbeing agent with streaming output."""
     print(f"\n👤 User: {user_input}")
     
-    # Use LangGraph app for proper tracing
-    result = await app.ainvoke({
-        "messages": [HumanMessage(content=user_input)]
-    })
-    
-    # Extract state from result
-    state = result
+    # Initialize state
+    state = {
+        "messages": [HumanMessage(content=user_input)],
+        "current_step": "start"
+    }
     
     # Start the workflow
     yield {
@@ -425,6 +423,7 @@ async def run_wellbeing_agent_stream(user_input: str):
     }
     
     # Analyze intent
+    state = analyze_intent_node(state)
     yield {
         'type': 'step', 
         'step': 'analyze_intent',
@@ -435,7 +434,7 @@ async def run_wellbeing_agent_stream(user_input: str):
     async for message_chunk in generate_advice_node_stream(state):
         if message_chunk['type'] == 'content':
             yield message_chunk
-            await asyncio.sleep(0.05) # Small delay for streaming effect
+            await asyncio.sleep(0.02) # Small delay for streaming effect
         elif message_chunk['type'] == 'follow_up':
             yield message_chunk
             break # Stop streaming after follow-up questions
