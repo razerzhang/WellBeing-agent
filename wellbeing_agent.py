@@ -415,7 +415,6 @@ async def run_wellbeing_agent_stream(user_input: str):
         "current_step": "start"
     }
     
-    # Start the workflow
     yield {
         'type': 'step',
         'step': 'start',
@@ -425,23 +424,23 @@ async def run_wellbeing_agent_stream(user_input: str):
     # Analyze intent
     state = analyze_intent_node(state)
     yield {
-        'type': 'step', 
+        'type': 'step',
         'step': 'analyze_intent',
         'message': f'📊 分析完成！检测到您需要 {state.get("advice_type", "general")} 方面的建议'
     }
-    
-    # Generate advice with streaming
+
+    # Generate advice with streaming output
     async for message_chunk in generate_advice_node_stream(state):
         if message_chunk['type'] == 'content':
             yield message_chunk
             await asyncio.sleep(0.02) # Small delay for streaming effect
         elif message_chunk['type'] == 'follow_up':
             yield message_chunk
-            break # Stop streaming after follow-up questions
+            break  # Stop streaming after follow-up questions
         elif message_chunk['type'] == 'error':
             yield message_chunk
-            break # Stop streaming on error
-    
+            break  # Stop streaming on error
+
     # Final summary
     yield {
         'type': 'summary',

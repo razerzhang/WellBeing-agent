@@ -4,6 +4,9 @@ LangSmith Integration Test
 Tests the LangSmith integration with the Wellbeing Agent
 """
 
+import pytest
+pytest.skip("LangSmith integration tests are skipped during automated testing.", allow_module_level=True)
+
 import os
 import asyncio
 from dotenv import load_dotenv
