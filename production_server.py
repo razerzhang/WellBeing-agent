@@ -146,6 +146,6 @@ if __name__ == "__main__":
         host=host,
         port=port,
         reload=False,  # 生产环境关闭热重载
-        workers=1,     # 单进程，避免多进程LangSmith问题
+        workers=4,     # 多进程
         log_level="info"
     )
