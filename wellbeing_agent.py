@@ -423,6 +423,7 @@ async def run_wellbeing_agent_stream(user_input: str):
         "current_step": "start"
     }
     
+
     # Start the workflow - immediately yield start message
     yield {
         'type': 'step',
@@ -434,7 +435,7 @@ async def run_wellbeing_agent_stream(user_input: str):
     state = analyze_intent_node(state)
     advice_type = state.get("advice_type", "general")
     yield {
-        'type': 'step', 
+        'type': 'step',
         'step': 'analyze_intent',
         'message': f'📊 分析完成！检测到您需要 {advice_type} 方面的建议'
     }
@@ -450,7 +451,6 @@ async def run_wellbeing_agent_stream(user_input: str):
         elif message_chunk['type'] == 'error':
             yield message_chunk
             break  # Stop streaming on error
-    
     # Final summary
     yield {
         'type': 'summary',
