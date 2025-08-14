@@ -406,41 +406,50 @@ async def run_wellbeing_agent(user_input: str) -> Dict[str, Any]:
     return result
 
 async def run_wellbeing_agent_stream(user_input: str):
-    """Run the wellbeing agent with streaming output."""
+    """Run the wellbeing agent with streaming output and LangSmith tracing."""
     print(f"\n👤 User: {user_input}")
     
-    # Initialize state
+    # Start LangSmith tracing in background
+    import asyncio
+    tracing_task = asyncio.create_task(
+        app.ainvoke({
+            "messages": [HumanMessage(content=user_input)]
+        })
+    )
+    
+    # Initialize state for immediate streaming
     state = {
         "messages": [HumanMessage(content=user_input)],
         "current_step": "start"
     }
     
-    # Start the workflow
+    # Start the workflow - immediately yield start message
     yield {
         'type': 'step',
         'step': 'start',
         'message': '🌱 开始分析您的健康需求...'
     }
     
-    # Analyze intent
+    # Analyze intent - run synchronously for immediate response
     state = analyze_intent_node(state)
+    advice_type = state.get("advice_type", "general")
     yield {
         'type': 'step', 
         'step': 'analyze_intent',
-        'message': f'📊 分析完成！检测到您需要 {state.get("advice_type", "general")} 方面的建议'
+        'message': f'📊 分析完成！检测到您需要 {advice_type} 方面的建议'
     }
     
-    # Generate advice with streaming
+    # Generate advice with streaming - use the original streaming function
     async for message_chunk in generate_advice_node_stream(state):
         if message_chunk['type'] == 'content':
             yield message_chunk
-            await asyncio.sleep(0.02) # Small delay for streaming effect
+            await asyncio.sleep(0.02)  # Small delay for streaming effect
         elif message_chunk['type'] == 'follow_up':
             yield message_chunk
-            break # Stop streaming after follow-up questions
+            break  # Stop streaming after follow-up questions
         elif message_chunk['type'] == 'error':
             yield message_chunk
-            break # Stop streaming on error
+            break  # Stop streaming on error
     
     # Final summary
     yield {
@@ -448,6 +457,12 @@ async def run_wellbeing_agent_stream(user_input: str):
         'advice_type': state.get("advice_type", "general"),
         'message': f'✅ {state.get("advice_type", "general")} 建议生成完成！'
     }
+    
+    # Wait for tracing to complete (this won't block the stream)
+    try:
+        await tracing_task
+    except Exception as e:
+        print(f"LangSmith tracing error: {e}")
 
 async def interactive_mode():
     """Run the wellbeing agent in interactive mode."""
